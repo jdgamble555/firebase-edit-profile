@@ -9,7 +9,6 @@ import {
 import { readable, type Subscriber } from "svelte/store";
 import { auth } from "./firebase";
 import { useSharedStore } from "./use-shared";
-import { useToast } from "./use-toast";
 import { FirebaseError } from "firebase/app";
 
 export const loginWithGoogle = async () =>
@@ -36,23 +35,25 @@ export const useUser = (defaultUser: UserType | null = null) =>
 
 export const updateUser = async (
     displayName: string,
-    photoURL: string,
-    toast: ReturnType<typeof useToast>
+    photoURL: string
 ) => {
 
     if (!auth.currentUser) {
-        throw 'Not Logged In!';
+        return {
+            error: 'Not Logged In!'
+        };
     }
-
     try {
         await updateProfile(auth.currentUser, {
             displayName,
             photoURL
         });
-        toast.open('Profile Updated!');
     } catch (e) {
         if (e instanceof FirebaseError) {
-            toast.error(e.message);
+            return {
+                error: e.message
+            };
         }
     }
+    return {};
 };
